@@ -21,14 +21,17 @@ def is_dir(dirname):
         return dirname
 
 def calculate_hash(filename, bs=2**16):
-    with open(filename, 'rb') as filep:
-        sha256gen = hashlib.sha256()
-        while True:
-            data = filep.read(bs)
-            if not data:
-                break
-            sha256gen.update(data)
-        return sha256gen.hexdigest()
+    try:
+        with open(filename, 'rb') as filep:
+            sha256gen = hashlib.sha256()
+            while True:
+                data = filep.read(bs)
+                if not data:
+                    break
+                sha256gen.update(data)
+            return sha256gen.hexdigest()
+    except IOError:
+        pass
 
 parser = argparse.ArgumentParser(description="""Checksumming directories and files.""")
 parser.add_argument('path', help="The directory to checksum", \
@@ -41,4 +44,6 @@ filelist = os.walk(givenpath)
 for root,dir,files in filelist:
     for name in files:
         whatnext = os.path.join(root, name)
-        print "{0} {1}".format(calculate_hash(whatnext), whatnext)
+        hash = calculate_hash(whatnext)
+        if hash is not None:
+            print "{0} {1}".format(hash, whatnext)
